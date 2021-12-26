@@ -1,0 +1,6 @@
+server:
+  port: 9955
+genetic:
+  selection: 0.2
+  mutation: 11
+  partition: 5

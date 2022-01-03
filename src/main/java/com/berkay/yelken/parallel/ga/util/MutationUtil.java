@@ -9,7 +9,7 @@ import com.berkay.yelken.parallel.ga.model.genetic.Generation;
 
 public final class MutationUtil {
 	public static void doGenerationMutation(Generation g, int geneInterval, int mutation) {
-		g.getChromosomes().parallelStream().forEach(c -> doMutation(c, geneInterval, mutation));
+		g.getChromosomes().stream().forEach(c -> doMutation(c, geneInterval, mutation));
 	}
 
 	private static void doMutation(Chromosome c, int geneInterval, int mutation) {

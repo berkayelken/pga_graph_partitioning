@@ -49,7 +49,7 @@ public class GraphPartitioningService {
 		model.getBest().getGenes().stream().forEach(
 				g -> model.addToPartition(g.getValue(), model.getGraph().getNodeByID(counter.incrementAndGet())));
 
-		model.getPartitions().entrySet().parallelStream().forEach(entry -> handlePartition(entry, res));
+		model.getPartitions().entrySet().stream().forEach(entry -> handlePartition(entry, res));
 
 	}
 

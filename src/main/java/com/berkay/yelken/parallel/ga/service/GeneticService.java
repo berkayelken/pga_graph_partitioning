@@ -71,7 +71,7 @@ public class GeneticService {
 			fitnessModel = calculateFitness(initial, g, costFitExpValue, balanceFitExpValue);
 
 			newGeneration.setChromosomes(
-					fitnessModel.getChromosomes().parallelStream().sorted().collect(Collectors.toList()));
+					fitnessModel.getChromosomes().stream().sorted().collect(Collectors.toList()));
 			gp.getGenerations().add(newGeneration);
 		}
 
@@ -102,13 +102,13 @@ public class GeneticService {
 	private Chromosome getBestChromosome(List<Generation> generations) {
 
 		List<Chromosome> bests = new ArrayList<>();
-		generations.parallelStream().filter(g -> g != null).forEach(g -> {
-			Chromosome c = g.getChromosomes().parallelStream().filter(GeneticService::isValidChromosome).sorted()
+		generations.stream().filter(g -> g != null).forEach(g -> {
+			Chromosome c = g.getChromosomes().stream().filter(GeneticService::isValidChromosome).sorted()
 					.findFirst().get();
 			bests.add(c);
 		});
 
-		return bests.parallelStream().filter(GeneticService::isValidChromosome).sorted().findFirst().get();
+		return bests.stream().filter(GeneticService::isValidChromosome).sorted().findFirst().get();
 	}
 
 	private static boolean isValidChromosome(Chromosome c) {

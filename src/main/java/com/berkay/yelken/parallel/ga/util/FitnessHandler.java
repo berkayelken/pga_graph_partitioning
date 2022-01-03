@@ -20,7 +20,7 @@ public final class FitnessHandler {
 			double balanceFitExpValue) {
 		FitnessModel fitnessModel = new FitnessModel(null, costFitExpValue, balanceFitExpValue);
 
-		Stream<Chromosome> generation = g.getChromosomes().parallelStream().map(c -> calculateFitness(c, graph));
+		Stream<Chromosome> generation = g.getChromosomes().stream().map(c -> calculateFitness(c, graph));
 
 		handleFitnessValue(g, fitnessModel);
 		fitnessModel.setChromosomes(generation.sorted().collect(Collectors.toList()));
@@ -61,7 +61,7 @@ public final class FitnessHandler {
 			fitnessModel.setBalanceFitExpValue(balanceFits);
 		}
 
-		g.getChromosomes().parallelStream().forEach(c -> {
+		g.getChromosomes().stream().forEach(c -> {
 			c.setCostFitness(c.getCostFitness() / fitnessModel.getCostFitExpValue());
 			c.setBalanceFitness(c.getBalanceFitness() / fitnessModel.getBalanceFitExpValue());
 		});

@@ -18,7 +18,7 @@ public final class FitnessHandler {
 
 	public static FitnessModel calculateFitness(Generation g, Graph graph, double costFitExpValue,
 			double balanceFitExpValue) {
-		FitnessModel fitnessModel = new FitnessModel(null, costFitExpValue, balanceFitExpValue);
+		FitnessModel fitnessModel = new FitnessModel(costFitExpValue, balanceFitExpValue);
 
 		Stream<Chromosome> generation = g.getChromosomes().parallelStream().map(c -> calculateFitness(c, graph));
 

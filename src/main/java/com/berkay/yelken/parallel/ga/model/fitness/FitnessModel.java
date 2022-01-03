@@ -1,5 +1,6 @@
 package com.berkay.yelken.parallel.ga.model.fitness;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,8 +11,8 @@ public class FitnessModel {
 	private double costFitExpValue;
 	private double balanceFitExpValue;
 
-	public FitnessModel(List<Chromosome> chromosomes, double costFitExpValue, double balanceFitExpValue) {
-		this.chromosomes = Collections.synchronizedList(chromosomes);
+	public FitnessModel(double costFitExpValue, double balanceFitExpValue) {
+		this.chromosomes = Collections.synchronizedList(new ArrayList<>());
 		this.costFitExpValue = costFitExpValue;
 		this.balanceFitExpValue = balanceFitExpValue;
 	}

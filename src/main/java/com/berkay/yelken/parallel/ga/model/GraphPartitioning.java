@@ -1,6 +1,7 @@
 package com.berkay.yelken.parallel.ga.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,7 +27,7 @@ public class GraphPartitioning {
 		if (generations == null) {
 			synchronized (this) {
 				if (generations == null)
-					generations = new ArrayList<>();
+					generations = Collections.synchronizedList(new ArrayList<>());
 			}
 		}
 

@@ -1,5 +1,6 @@
 package com.berkay.yelken.parallel.ga.model.genetic;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -12,8 +13,9 @@ public class Generation {
 	}
 
 	public Generation(int geneInterval, int genesNum, int populationSize) {
-		chromosomes = Stream.generate(() -> new Chromosome(geneInterval, genesNum)).limit(populationSize)
+		List<Chromosome> chromosomes = Stream.generate(() -> new Chromosome(geneInterval, genesNum)).limit(populationSize)
 				.collect(Collectors.toList());
+		this.chromosomes = Collections.synchronizedList(chromosomes);
 	}
 
 	public List<Chromosome> getChromosomes() {

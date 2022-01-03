@@ -3,6 +3,7 @@ package com.berkay.yelken.parallel.ga.model.genetic;
 import static java.lang.Double.NaN;
 import static java.lang.Math.pow;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,7 +19,8 @@ public class Chromosome implements Comparable<Chromosome> {
 	}
 
 	public Chromosome(int geneInterval, long genesNum) {
-		genes = Stream.generate(() -> new Gene(geneInterval)).limit(genesNum).collect(Collectors.toList());
+		List<Gene> genes = Stream.generate(() -> new Gene(geneInterval)).limit(genesNum).collect(Collectors.toList());
+		this.genes = Collections.synchronizedList(genes);
 	}
 
 	public List<Gene> getGenes() {

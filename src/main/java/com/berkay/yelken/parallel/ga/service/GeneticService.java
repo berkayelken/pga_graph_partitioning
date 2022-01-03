@@ -10,6 +10,7 @@ import static java.lang.Math.floor;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -101,7 +102,7 @@ public class GeneticService {
 
 	private Chromosome getBestChromosome(List<Generation> generations) {
 
-		List<Chromosome> bests = new ArrayList<>();
+		List<Chromosome> bests = Collections.synchronizedList(new ArrayList<>());
 		generations.parallelStream().filter(g -> g != null && g.getChromosomes() != null).forEach(g -> {
 			Chromosome c = g.getChromosomes().parallelStream().filter(GeneticService::isValidChromosome).sorted()
 					.findFirst().get();

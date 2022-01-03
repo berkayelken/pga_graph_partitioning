@@ -17,7 +17,17 @@ public class LoggingAspect {
 	private void loggingPointcut() {
 	}
 
-	@AfterReturning(pointcut = "loggingPointcut()", returning = "returnValue")
+	@Pointcut("within(com.berkay.yelken.parallel.ga.configuration..*)")
+	private void configPointcut() {
+
+	}
+
+	@Pointcut("execution(public * *(..))")
+	private void publicMethods() {
+
+	}
+
+	@AfterReturning(pointcut = "loggingPointcut() && publicMethods() && !configPointcut()", returning = "returnValue")
 	public void logInfo(JoinPoint jp, Object returnValue) {
 		String methodName = jp.getSignature().getName();
 

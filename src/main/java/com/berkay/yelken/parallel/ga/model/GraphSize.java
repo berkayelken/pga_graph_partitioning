@@ -6,17 +6,17 @@ import java.nio.file.Paths;
 public enum GraphSize {
 	SMALL {
 		public Path getFilePath() {
-			return getResourcePath("200.txt");
+			return getResourcePath("dermatology_5NN.mtx");
 		}
 	},
 	MEDIUM {
 		public Path getFilePath() {
-			return getResourcePath("1k.txt");
+			return getResourcePath("dataset22mfeatzernike_10NN.mtx");
 		}
 	},
 	LARGE {
 		public Path getFilePath() {
-			return getResourcePath("10k.txt");
+			return getResourcePath("MISKnowledgeMap.mtx");
 		}
 	};
 

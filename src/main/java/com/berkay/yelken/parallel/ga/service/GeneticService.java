@@ -102,7 +102,7 @@ public class GeneticService {
 	private Chromosome getBestChromosome(List<Generation> generations) {
 
 		List<Chromosome> bests = new ArrayList<>();
-		generations.parallelStream().forEach(g -> {
+		generations.parallelStream().filter(g -> g != null).forEach(g -> {
 			Chromosome c = g.getChromosomes().parallelStream().filter(GeneticService::isValidChromosome).sorted()
 					.findFirst().get();
 			bests.add(c);

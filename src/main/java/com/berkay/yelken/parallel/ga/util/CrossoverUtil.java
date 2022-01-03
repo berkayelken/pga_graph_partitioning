@@ -15,10 +15,10 @@ public final class CrossoverUtil {
 	public static void doGenerationCrossover(Generation g, int newbornSize) {
 		List<Chromosome> newBorns = new ArrayList<>();
 		Stream.generate(() -> 0).limit(newbornSize).parallel().forEach(x -> {
-			Chromosome parent1 = g.getChromosomes().parallelStream().findAny().get();
-			Chromosome parent2 = g.getChromosomes().parallelStream().findAny().get();
+			Chromosome parent1 = g.getChromosomes().stream().findAny().get();
+			Chromosome parent2 = g.getChromosomes().stream().findAny().get();
 			if (parent1.equals(parent2))
-				parent2 = g.getChromosomes().parallelStream().findAny().get();
+				parent2 = g.getChromosomes().stream().findAny().get();
 
 			doCrossover(newBorns, parent1, parent2);
 		});
@@ -28,8 +28,8 @@ public final class CrossoverUtil {
 		Random rand = new SecureRandom();
 		int randCut = rand.nextInt(parent1.getGenes().size() - 1);
 
-		Stream<Gene> part1 = parent1.getGenes().parallelStream().limit(randCut);
-		Stream<Gene> part2 = parent2.getGenes().parallelStream().skip(randCut);
+		Stream<Gene> part1 = parent1.getGenes().stream().limit(randCut);
+		Stream<Gene> part2 = parent2.getGenes().stream().skip(randCut);
 
 		Chromosome child = new Chromosome(Stream.concat(part1, part2).collect(Collectors.toList()));
 		cs.add(child);

@@ -1,6 +1,6 @@
 package com.berkay.yelken.parallel.ga.util;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
-import com.berkay.yelken.parallel.ga.model.Edge;
 import com.berkay.yelken.parallel.ga.model.Graph;
+import com.berkay.yelken.parallel.ga.model.Node;
 import com.berkay.yelken.parallel.ga.model.fitness.FitnessModel;
 import com.berkay.yelken.parallel.ga.model.genetic.Chromosome;
 import com.berkay.yelken.parallel.ga.model.genetic.Generation;
@@ -29,10 +29,10 @@ public final class FitnessHandler {
 	}
 
 	private static Chromosome calculateFitness(Chromosome c, Graph graph) {
-		c.setCostFitness(getCostFitness(c, graph.getEdges()));
+		c.setCostFitness(getCostFitness(c, graph.getNodesMap().values()));
 		StandardDeviation stdDev = new StandardDeviation();
 		AtomicInteger nodeCounter = new AtomicInteger();
-		double[] weights = c.getGenes().parallelStream()
+		double[] weights = c.getGenes().stream()
 				.mapToDouble(cs -> graph.getNodeByID(nodeCounter.incrementAndGet()).getWeight())
 				.filter(w -> !Double.isNaN(w)).toArray();
 		double balanceFitness = stdDev.evaluate(weights);
@@ -40,13 +40,10 @@ public final class FitnessHandler {
 		return c;
 	}
 
-	private static double getCostFitness(Chromosome c, Set<Edge> edges) {
+	private static double getCostFitness(Chromosome c, Collection<Node> nodes) {
 		AtomicReference<Double> costFitness = new AtomicReference<>(0.0);
-		edges.parallelStream().forEach(e -> {
-			int index1 = e.getNode1().getId() - 1;
-			int index2 = e.getNode2().getId() - 1;
-			if (c.getGenes().get(index1) != c.getGenes().get(index2))
-				costFitness.accumulateAndGet(e.getWeight(), (a, b) -> a + b);
+		nodes.stream().forEach(node -> {
+			costFitness.accumulateAndGet(node.getWeight(), (a, b) -> a + b);
 		});
 		return costFitness.get();
 	}
@@ -54,13 +51,12 @@ public final class FitnessHandler {
 	private static void handleFitnessValue(Generation g, FitnessModel fitnessModel) {
 
 		if (Double.isNaN(fitnessModel.getCostFitExpValue())) {
-			double costFits = g.getChromosomes().parallelStream().mapToDouble(c -> c.getCostFitness()).average()
-					.getAsDouble();
+			double costFits = g.getChromosomes().stream().mapToDouble(c -> c.getCostFitness()).average().getAsDouble();
 			fitnessModel.setCostFitExpValue(costFits);
 		}
 
 		if (Double.isNaN(fitnessModel.getBalanceFitExpValue())) {
-			double balanceFits = g.getChromosomes().parallelStream().mapToDouble(c -> c.getBalanceFitness()).average()
+			double balanceFits = g.getChromosomes().stream().mapToDouble(c -> c.getBalanceFitness()).average()
 					.getAsDouble();
 			fitnessModel.setBalanceFitExpValue(balanceFits);
 		}

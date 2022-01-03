@@ -2,6 +2,7 @@ package com.berkay.yelken.parallel.ga.service;
 
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,20 +46,22 @@ public class GraphPartitioningService {
 
 	private void doPartitioning(GraphPartitioning model, ResponseModel res) {
 		AtomicInteger counter = new AtomicInteger();
-		model.getBest().getGenes().parallelStream().forEach(
+		model.getBest().getGenes().stream().forEach(
 				g -> model.addToPartition(g.getValue(), model.getGraph().getNodeByID(counter.incrementAndGet())));
 
-		model.getPartitions().entrySet().parallelStream().forEach(entry -> {
-			Partition part = entry.getValue();
-			int size = part.getNodes().size();
-			int key = entry.getKey();
+		model.getPartitions().entrySet().parallelStream().forEach(entry -> handlePartition(entry, res));
 
-			part.setSize(size);
-			PartitionResponse partRes = new PartitionResponse();
-			partRes.setSize(size);
-			res.getPartitions().put(key + 1, partRes);
-		});
+	}
 
+	private void handlePartition(Entry<Integer, Partition> entry, ResponseModel res) {
+		Partition part = entry.getValue();
+		int size = part.getNodes().size();
+		int key = entry.getKey();
+
+		part.setSize(size);
+		PartitionResponse partRes = new PartitionResponse();
+		partRes.setSize(size);
+		res.getPartitions().put(key + 1, partRes);
 	}
 
 }

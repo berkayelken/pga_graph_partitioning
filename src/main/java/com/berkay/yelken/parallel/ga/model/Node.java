@@ -1,18 +1,16 @@
 package com.berkay.yelken.parallel.ga.model;
 
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Node implements Comparable<Node> {
 
-	private int id;
+	private int id, x, y;
 	private double weight;
 
-	private Set<Edge> edges;
-
-	public Node(int id, double weight) {
+	public Node(int id, int x, int y, double weight) {
 		this.id = id;
+		this.x = x;
+		this.y = y;
 		this.weight = weight;
 	}
 
@@ -24,31 +22,28 @@ public class Node implements Comparable<Node> {
 		this.id = id;
 	}
 
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
 	public double getWeight() {
 		return weight;
 	}
 
 	public void setWeight(double weight) {
 		this.weight = weight;
-	}
-
-	public Set<Edge> getEdges() {
-		if (edges == null) {
-			synchronized (this) {
-				if (edges == null)
-					edges = new ConcurrentSkipListSet<>();
-			}
-		}
-
-		return edges;
-	}
-
-	public void setEdges(Set<Edge> edges) {
-		this.edges = edges;
-	}
-
-	public Node followEdge(Edge e) {
-		return e.getPairedNode(this);
 	}
 
 	@Override

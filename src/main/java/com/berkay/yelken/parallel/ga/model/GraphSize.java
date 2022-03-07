@@ -17,7 +17,7 @@ public enum GraphSize {
 	},
 	MEDIUM {
 		public Path getFilePath() {
-			return getResourcePath("dataset22mfeatzernike_10NN.mtx");
+			return getResourcePath("medium/dataset22mfeatzernike_10NN.mtx");
 		}
 
 		@Override

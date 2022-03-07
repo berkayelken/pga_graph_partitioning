@@ -100,7 +100,7 @@ public class ResponseModel {
 	}
 
 	public double getTotalCost() {
-		return totalCost;
+		return totalCost / 2;
 	}
 
 	public void setTotalCost(double totalCost) {

@@ -74,11 +74,10 @@ public class GraphPartitioningService {
 		int size = part.getNodes().size();
 		int key = entry.getKey();
 
-		int partitionSize = model.getPartitions().size();
 		part.setSize(size);
 		PartitionResponse partRes = new PartitionResponse();
 		partRes.setSize(size);
-		partRes.setCost(part.getCost() / partitionSize);
+		partRes.setCost(part.getCost());
 		partRes.setNonZeroCount(part.getNonZeroCount());
 		res.incrementCost(partRes.getCost());
 		res.getPartitions().put(key + 1, partRes);

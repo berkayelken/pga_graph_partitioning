@@ -1,28 +1,37 @@
 package com.berkay.yelken.parallel.ga.util;
 
+import static com.berkay.yelken.parallel.ga.util.CrossoverUtil.doCrossover;
 import static com.berkay.yelken.parallel.ga.util.CrossoverUtil.doGenerationCrossover;
+import static com.berkay.yelken.parallel.ga.util.FitnessHandler.calculateFitness;
 import static com.berkay.yelken.parallel.ga.util.MutationUtil.doGenerationMutation;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.berkay.yelken.parallel.ga.model.Graph;
 import com.berkay.yelken.parallel.ga.model.InitType;
 import com.berkay.yelken.parallel.ga.model.genetic.Chromosome;
 import com.berkay.yelken.parallel.ga.model.genetic.Generation;
 
 public final class PopulationInitializer {
-	public static Generation getInitial(InitType initType, int partitionSize, int genesNum, int populationSize, int mutationRatio, List<Chromosome> seedList) {
+	public static Generation getInitial(Graph graph, InitType initType, int partitionSize, int genesNum, int populationSize, int mutationRatio, List<Chromosome> seedList) {
 		if(seedList == null || seedList.size() == 0)
 			return  new Generation(partitionSize, genesNum, populationSize);
+		Generation tempGeneration = null;
 		switch (initType) {
 		case TRIBE:
-			return getTribeGeneration(partitionSize, genesNum, populationSize, mutationRatio, seedList);
+			tempGeneration = getTribeGeneration(partitionSize, genesNum, populationSize, mutationRatio, seedList);
+			break;
 		case PSUEDO_RANDOM:
-			return getPsuedoRandomGeneration(partitionSize, genesNum, populationSize, seedList);
+			tempGeneration = getPsuedoRandomGeneration(partitionSize, genesNum, populationSize, seedList);
+			break;
 		case FULLY_RANDOM:
 		default:
-			return  new Generation(partitionSize, genesNum, populationSize);
+			tempGeneration =  new Generation(partitionSize, genesNum, populationSize);
+			break;
 		}
+
+		return new Generation(calculateFitness(tempGeneration, graph));
 	}
 
 	private static Generation getPsuedoRandomGeneration(int partitionSize, int genesNum, int populationSize, List<Chromosome> seedList) {

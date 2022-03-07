@@ -1,6 +1,7 @@
 package com.berkay.yelken.parallel.ga.util;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -18,15 +19,10 @@ import com.berkay.yelken.parallel.ga.model.genetic.Generation;
 
 public final class FitnessHandler {
 
-	public static FitnessModel calculateFitness(Generation g, Graph graph, double costFitExpValue,
-			double balanceFitExpValue) {
-		FitnessModel fitnessModel = new FitnessModel(costFitExpValue, balanceFitExpValue);
-
+	public static List<Chromosome> calculateFitness(Generation g, Graph graph) {
 		Stream<Chromosome> generation = g.getChromosomes().parallelStream().map(c -> calculateFitness(c, graph));
 
-		fitnessModel.setChromosomes(generation.sorted().collect(Collectors.toList()));
-
-		return fitnessModel;
+		return generation.sorted().collect(Collectors.toList());
 	}
 
 	private static Chromosome calculateFitness(Chromosome c, Graph graph) {

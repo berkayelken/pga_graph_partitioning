@@ -34,9 +34,11 @@ public class GraphService {
 
 		int x = Integer.valueOf(data[0]);
 		int y = Integer.valueOf(data[1]);
+
 		double weight = unweighted ? 1.0 : Double.parseDouble(data[2]);
 
 		graph.addNode(x, y, weight);
+		graph.addNode(y, x, weight);
 	}
 
 }

@@ -24,7 +24,7 @@ public final class CrossoverUtil {
 		});
 	}
 
-	private static void doCrossover(List<Chromosome> cs, Chromosome parent1, Chromosome parent2) {
+	public static void doCrossover(List<Chromosome> cs, Chromosome parent1, Chromosome parent2) {
 		Random rand = new SecureRandom();
 		int randCut = rand.nextInt(parent1.getGenes().size() - 3) + 1;
 

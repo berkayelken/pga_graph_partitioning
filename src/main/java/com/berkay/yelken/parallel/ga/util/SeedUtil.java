@@ -10,13 +10,20 @@ import java.util.stream.Stream;
 
 import com.berkay.yelken.parallel.ga.model.Graph;
 import com.berkay.yelken.parallel.ga.model.GraphSize;
+import com.berkay.yelken.parallel.ga.model.InitType;
+import com.berkay.yelken.parallel.ga.model.Node;
 import com.berkay.yelken.parallel.ga.model.genetic.Chromosome;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import static com.berkay.yelken.parallel.ga.model.InitType.FULLY_RANDOM;
+
 public final class SeedUtil {
-	public static List<Chromosome> getSeedList(GraphSize graphSize, Graph graph, int partitionSize, int seedCount) {
+	public static List<Chromosome> getSeedList(GraphSize graphSize, Graph graph, InitType initType, int partitionSize, int seedCount) {
 		List<Chromosome> seedList = new LinkedList<>();
+		if(initType == FULLY_RANDOM)
+			return seedList;
 		String seedName = graphSize.getSeedUri() + partitionSize + "-seed";
 		for(int i = 1; i <= seedCount; i++) {
 			seedList.add(getChromosome(graph, seedName + i));
@@ -28,7 +35,7 @@ public final class SeedUtil {
 		Chromosome chromosome = new Chromosome(new LinkedList<>());
 
 		try (Stream<String> lines = Files.lines(getResourcePath(name))) {
-			lines.parallel().skip(1).filter(line -> StringUtils.hasText(line))
+			lines.skip(1).filter(line -> StringUtils.hasText(line))
 					.forEach(line -> addGene(graph, chromosome, line));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -46,7 +53,6 @@ public final class SeedUtil {
 		int part = Integer.valueOf(data[1]) - 1;
 
 		chromosome.handleAddGene(part, graph.getNodeByID(id));
-
 	}
 
 	private static Path getResourcePath(String fileName) {

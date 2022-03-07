@@ -35,7 +35,7 @@ public class GraphPartitioningService {
 		GraphSize size = request.getSize();
 
 		Graph graph = graphService.createGraph(size, request.isUnweighted());
-		List<Chromosome> seedList = getSeedList(size, graph, request.getPartitionCount(), request.getSeedCount());
+		List<Chromosome> seedList = getSeedList(size, graph, request.getInitialPopulationType(), request.getPartitionCount(), request.getSeedCount());
 
 		LocalTime start = LocalTime.now();
 

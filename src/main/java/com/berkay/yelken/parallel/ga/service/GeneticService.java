@@ -5,7 +5,6 @@ import static com.berkay.yelken.parallel.ga.util.FitnessHandler.calculateFitness
 import static com.berkay.yelken.parallel.ga.util.MutationUtil.doGenerationMutation;
 import static com.berkay.yelken.parallel.ga.util.PopulationInitializer.getInitial;
 import static com.berkay.yelken.parallel.ga.util.SelectionUtil.doNaturalSelection;
-import static java.lang.Double.NaN;
 import static java.lang.Math.floor;
 
 import java.time.Duration;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import com.berkay.yelken.parallel.ga.configuration.GeneticProperties;
 import com.berkay.yelken.parallel.ga.model.Graph;
 import com.berkay.yelken.parallel.ga.model.GraphPartitioning;
-import com.berkay.yelken.parallel.ga.model.fitness.FitnessModel;
 import com.berkay.yelken.parallel.ga.model.genetic.Chromosome;
 import com.berkay.yelken.parallel.ga.model.genetic.Generation;
 import com.berkay.yelken.parallel.ga.model.response.ResponseModel;
@@ -49,19 +47,17 @@ public class GeneticService {
 
 		double imbalanceThreshold = prop.getImbalanceThreshold();
 
-		Generation initial = getInitial(initType, partitionSize, g.size(), populationSize, prop.getMutation(), seedList);
+		Generation initial = getInitial(g, initType, partitionSize, g.size(), populationSize, prop.getMutation(), seedList);
 
-		FitnessModel fitnessModel = calculateFitness(initial, g, NaN, NaN);
-		double costFitExpValue = fitnessModel.getCostFitExpValue();
-		double balanceFitExpValue = fitnessModel.getBalanceFitExpValue();
+		List<Chromosome> fitnessChromosomes = calculateFitness(initial, g);
 		for (int i = 0; i < generationSize; i++) {
-			int chromosomeCount = fitnessModel.getChromosomes().size();
+			int chromosomeCount = initial.getChromosomes().size();
 			int selection = Double.valueOf(floor(prop.getSelection() * chromosomeCount)).intValue();
 
 
 			LocalTime start = LocalTime.now();
-			List<Chromosome> chromosomes = doNaturalSelection(fitnessModel.getChromosomes(), selection, imbalanceThreshold);
-			if(chromosomes.size() < selection / 2)
+			List<Chromosome> chromosomes = doNaturalSelection(fitnessChromosomes, selection, imbalanceThreshold);
+			if(chromosomes.size() < selection / 2 && i != 0)
 				continue;
 			Generation newGeneration = new Generation(chromosomes);
 
@@ -80,11 +76,10 @@ public class GeneticService {
 			end = LocalTime.now();
 			totalMutationTimeCounter.accumulateAndGet(Duration.between(start, end).toNanos(), (a, b) -> a + b);
 
-			fitnessModel = calculateFitness(initial, g, costFitExpValue, balanceFitExpValue);
-
 			newGeneration.setChromosomes(
-					fitnessModel.getChromosomes().parallelStream().sorted().collect(Collectors.toList()));
+					fitnessChromosomes.parallelStream().sorted().collect(Collectors.toList()));
 			gp.getGenerations().add(newGeneration);
+			fitnessChromosomes = calculateFitness(newGeneration, g);
 		}
 
 		Chromosome best = getBestChromosome(gp.getGenerations());

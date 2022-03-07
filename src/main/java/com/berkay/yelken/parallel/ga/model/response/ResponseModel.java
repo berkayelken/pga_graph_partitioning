@@ -16,6 +16,7 @@ public class ResponseModel {
 	private String avgCrossoverTime;
 	private String avgMutationTime;
 
+	private double totalCost;
 	private Map<Integer, PartitionResponse> partitions;
 
 	public int getPartitionNum() {
@@ -96,6 +97,18 @@ public class ResponseModel {
 
 	public void setAvgMutationTime(String avgMutationTime) {
 		this.avgMutationTime = avgMutationTime;
+	}
+
+	public double getTotalCost() {
+		return totalCost;
+	}
+
+	public void setTotalCost(double totalCost) {
+		this.totalCost = totalCost;
+	}
+
+	public void incrementCost(double cost) {
+		totalCost += cost;
 	}
 
 	public Map<Integer, PartitionResponse> getPartitions() {

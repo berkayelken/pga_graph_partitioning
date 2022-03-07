@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class GeneticProperties {
 	private double selection;
 	private int mutation;
-	private int partition;
+	private double imbalanceThreshold;
 
 	public double getSelection() {
 		return selection;
@@ -26,12 +26,11 @@ public class GeneticProperties {
 		this.mutation = mutation;
 	}
 
-	public int getPartition() {
-		return partition;
+	public double getImbalanceThreshold() {
+		return imbalanceThreshold;
 	}
 
-	public void setPartition(int partition) {
-		this.partition = partition;
+	public void setImbalanceThreshold(double imbalanceThreshold) {
+		this.imbalanceThreshold = imbalanceThreshold;
 	}
-
 }

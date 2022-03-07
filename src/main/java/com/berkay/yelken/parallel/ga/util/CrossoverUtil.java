@@ -26,7 +26,7 @@ public final class CrossoverUtil {
 
 	private static void doCrossover(List<Chromosome> cs, Chromosome parent1, Chromosome parent2) {
 		Random rand = new SecureRandom();
-		int randCut = rand.nextInt(parent1.getGenes().size() - 1);
+		int randCut = rand.nextInt(parent1.getGenes().size() - 3) + 1;
 
 		Stream<Gene> part1 = parent1.getGenes().stream().limit(randCut);
 		Stream<Gene> part2 = parent2.getGenes().stream().skip(randCut);

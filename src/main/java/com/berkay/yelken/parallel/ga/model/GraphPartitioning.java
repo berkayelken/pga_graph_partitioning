@@ -57,10 +57,6 @@ public class GraphPartitioning {
 		return partitions;
 	}
 
-	public void setPartitions(ConcurrentMap<Integer, Partition> partitions) {
-		this.partitions = partitions;
-	}
-
 	public void addToPartition(int part, Node node) {
 		if (!getPartitions().containsKey(part)) {
 			synchronized (this) {

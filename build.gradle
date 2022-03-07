@@ -15,8 +15,7 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
-	
-	implementation 'org.apache.commons:commons-math3:3.6.1'
+
 	implementation 'io.springfox:springfox-boot-starter:3.0.0'
 	
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'

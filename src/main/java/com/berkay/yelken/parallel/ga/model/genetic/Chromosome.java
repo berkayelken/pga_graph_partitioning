@@ -1,18 +1,20 @@
 package com.berkay.yelken.parallel.ga.model.genetic;
 
-import static java.lang.Double.NaN;
-import static java.lang.Math.pow;
+import com.berkay.yelken.parallel.ga.model.Node;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Chromosome implements Comparable<Chromosome> {
 	private List<Gene> genes;
-	private double costFitness = NaN;
-	private double balanceFitness = NaN;
-	private double fitness = NaN;
+	private ConcurrentMap<Integer, Double> costMap = new ConcurrentHashMap<>();
+	private ConcurrentMap<Integer, Integer> nonZeroMap = new ConcurrentHashMap<>();
+	private double totalCost;
 
 	public Chromosome(List<Gene> genes) {
 		this.genes = genes;
@@ -27,39 +29,45 @@ public class Chromosome implements Comparable<Chromosome> {
 		return genes;
 	}
 
-	public void setGenes(List<Gene> genes) {
-		this.genes = genes;
+	public ConcurrentMap<Integer, Double> getCostMap() {
+		return costMap;
 	}
 
-	public double getCostFitness() {
-		return costFitness;
+	public double getTotalCost() {
+		return totalCost;
 	}
 
-	public void setCostFitness(double costFitness) {
-		this.costFitness = costFitness;
-		updateFitness();
+	public void setTotalCost(double totalCost) {
+		this.totalCost = totalCost;
 	}
 
-	public double getBalanceFitness() {
-		return balanceFitness;
+	public ConcurrentMap<Integer, Integer> getNonZeroMap() {
+		return nonZeroMap;
 	}
 
-	public void setBalanceFitness(double balanceFitness) {
-		this.balanceFitness = balanceFitness;
-		updateFitness();
+	public double getImbalanceValue() {
+		int max = getNonZeroMap().values().stream().max(Integer::compareTo).get();
+		AtomicInteger total = new AtomicInteger();
+		getNonZeroMap().values().stream().forEach(nonZero -> total.accumulateAndGet(nonZero, (a, b) -> a + b));
+
+		double avg = Double.valueOf(total.get()) / Double.valueOf(getNonZeroMap().size());
+
+		return Double.valueOf(max)/avg;
 	}
 
-	public double getFitness() {
-		return fitness;
-	}
-
-	private void updateFitness() {
-		fitness = pow(getCostFitness(), 2) + pow(getBalanceFitness(), 2);
+	public void handleAddGene(int partition, Node node) {
+		double totalWeight = getCostMap().containsKey(partition) ? getCostMap().get(partition) : 0.0;
+		totalWeight += node.getWeight();
+		getCostMap().put(partition, totalWeight);
+		getNonZeroMap().put(node.getId(), node.getYVals().size());
+		Gene gene = new Gene();
+		gene.setValue(node.getId());
+		getGenes().add(gene);
 	}
 
 	@Override
 	public int compareTo(Chromosome o) {
-		return Double.compare(o.getFitness(), getFitness());
+		return Double.compare(getTotalCost(), o.getTotalCost());
 	}
 
 }

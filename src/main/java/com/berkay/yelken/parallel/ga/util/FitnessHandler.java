@@ -1,12 +1,14 @@
 package com.berkay.yelken.parallel.ga.util;
 
-import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 import com.berkay.yelken.parallel.ga.model.Graph;
 import com.berkay.yelken.parallel.ga.model.Node;
@@ -22,48 +24,50 @@ public final class FitnessHandler {
 
 		Stream<Chromosome> generation = g.getChromosomes().parallelStream().map(c -> calculateFitness(c, graph));
 
-		handleFitnessValue(g, fitnessModel);
 		fitnessModel.setChromosomes(generation.sorted().collect(Collectors.toList()));
 
 		return fitnessModel;
 	}
 
 	private static Chromosome calculateFitness(Chromosome c, Graph graph) {
-		c.setCostFitness(getCostFitness(c, graph.getNodesMap().values()));
-		StandardDeviation stdDev = new StandardDeviation();
-		AtomicInteger nodeCounter = new AtomicInteger();
-		double[] weights = c.getGenes().stream()
-				.mapToDouble(cs -> graph.getNodeByID(nodeCounter.incrementAndGet()).getWeight())
-				.filter(w -> !Double.isNaN(w)).toArray();
-		double balanceFitness = stdDev.evaluate(weights);
-		c.setBalanceFitness(balanceFitness);
+
+		ConcurrentMap<Integer, ConcurrentMap<Integer, Node>> partitionMap = getChromosomePartition(c, graph);
+		calculatePartitionsCosts(c, partitionMap);
 		return c;
 	}
 
-	private static double getCostFitness(Chromosome c, Collection<Node> nodes) {
-		AtomicReference<Double> costFitness = new AtomicReference<>(0.0);
-		nodes.stream().forEach(node -> {
-			costFitness.accumulateAndGet(node.getWeight(), (a, b) -> a + b);
+	private static ConcurrentMap<Integer, ConcurrentMap<Integer, Node>> getChromosomePartition(Chromosome c, Graph graph) {
+		ConcurrentMap<Integer, ConcurrentMap<Integer, Node>> partitionMap = new ConcurrentHashMap<>();
+		LinkedList<Node> nodes = new LinkedList<>(graph.getNodeList());
+
+		c.getGenes().stream().forEach(gene -> {
+			ConcurrentMap<Integer, Node> nodeList = partitionMap.get(gene.getValue());
+			if(nodeList == null)
+				nodeList = new ConcurrentHashMap<>();
+			Node node = nodes.pop();
+			nodeList.put(node.getId(), node);
+			partitionMap.put(gene.getValue(), nodeList);
 		});
-		return costFitness.get();
+
+		return partitionMap;
 	}
 
-	private static void handleFitnessValue(Generation g, FitnessModel fitnessModel) {
+	private static void calculatePartitionsCosts(Chromosome c, ConcurrentMap<Integer, ConcurrentMap<Integer, Node>> partitionMap) {
 
-		if (Double.isNaN(fitnessModel.getCostFitExpValue())) {
-			double costFits = g.getChromosomes().stream().mapToDouble(c -> c.getCostFitness()).average().getAsDouble();
-			fitnessModel.setCostFitExpValue(costFits);
-		}
-
-		if (Double.isNaN(fitnessModel.getBalanceFitExpValue())) {
-			double balanceFits = g.getChromosomes().stream().mapToDouble(c -> c.getBalanceFitness()).average()
-					.getAsDouble();
-			fitnessModel.setBalanceFitExpValue(balanceFits);
-		}
-
-		g.getChromosomes().parallelStream().forEach(c -> {
-			c.setCostFitness(c.getCostFitness() / fitnessModel.getCostFitExpValue());
-			c.setBalanceFitness(c.getBalanceFitness() / fitnessModel.getBalanceFitExpValue());
+		partitionMap.entrySet().parallelStream().forEach(entry -> {
+			Set<Integer> allYVals = new ConcurrentSkipListSet<>();
+			AtomicInteger nonZeroCount = new AtomicInteger();
+			 entry.getValue().values().parallelStream().forEach(node -> {
+				 allYVals.addAll(node.getYVals());
+				 nonZeroCount.accumulateAndGet(node.getYVals().size(), (a, b) -> a+ b);
+			 });
+			long cost = entry.getValue().values().stream().filter(node -> !allYVals.contains(node.getId())).count();
+			c.getCostMap().put(entry.getKey(), Double.valueOf(cost));
+			c.getNonZeroMap().put(entry.getKey(), nonZeroCount.get());
 		});
+
+		AtomicReference<Double> costOfParts = new AtomicReference<>(0.0);
+		c.getCostMap().values().stream().forEach(cost -> costOfParts.updateAndGet(cp -> cp + cost));
+		c.setTotalCost(costOfParts.get());
 	}
 }

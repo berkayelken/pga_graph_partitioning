@@ -7,7 +7,7 @@ import com.berkay.yelken.parallel.ga.model.genetic.Chromosome;
 
 public final class SelectionUtil {
 
-	public static List<Chromosome> doNaturalSelection(List<Chromosome> cs, int selection) {
-		return cs.stream().limit(selection).collect(Collectors.toList());
+	public static List<Chromosome> doNaturalSelection(List<Chromosome> cs, int selection, double imbalanceThreshold) {
+		return cs.stream().filter(c -> c.getImbalanceValue() <= imbalanceThreshold).sorted().limit(selection).collect(Collectors.toList());
 	}
 }

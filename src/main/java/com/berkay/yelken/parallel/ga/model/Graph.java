@@ -1,58 +1,24 @@
 package com.berkay.yelken.parallel.ga.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 public class Graph {
 
-	private ConcurrentMap<Integer, Node> nodesMap;
-	private ConcurrentMap<Integer, Node> xNodes;
-	private ConcurrentMap<Integer, Node> yNodes;
+	private List<Node> nodeList = new ArrayList<>();
+
+	private ConcurrentMap<Integer, Node> nodesMap = new ConcurrentHashMap<>();
 
 	public ConcurrentMap<Integer, Node> getNodesMap() {
-		if (nodesMap == null) {
-			synchronized (this) {
-				if (nodesMap == null)
-					nodesMap = new ConcurrentHashMap<>();
-			}
-		}
-
 		return nodesMap;
 	}
 
 	public void setNodesMap(ConcurrentMap<Integer, Node> nodesMap) {
 		this.nodesMap = nodesMap;
-	}
-	
-	public ConcurrentMap<Integer, Node> getXNodes() {
-		if (xNodes == null) {
-			synchronized (this) {
-				if (xNodes == null)
-					xNodes = new ConcurrentHashMap<>();
-			}
-		}
-		
-		return xNodes;
-	}
-
-	public void setxNodes(ConcurrentMap<Integer, Node> xNodes) {
-		this.xNodes = xNodes;
-	}
-
-	public ConcurrentMap<Integer, Node> getYNodes() {
-		if (yNodes == null) {
-			synchronized (this) {
-				if (yNodes == null)
-					yNodes = new ConcurrentHashMap<>();
-			}
-		}
-		
-		return yNodes;
-	}
-
-	public void setyNodes(ConcurrentMap<Integer, Node> yNodes) {
-		this.yNodes = yNodes;
 	}
 
 	public Node getNodeByID(int id) {
@@ -63,14 +29,25 @@ public class Graph {
 		return getNodesMap().keySet();
 	}
 
-	public void addNode(Node node) {
-		getNodesMap().put(node.getId(), node);
-		addNeighbourMap(node);
+	public List<Node> getNodeList() {
+		return nodeList;
 	}
-	
-	private void addNeighbourMap(Node node) {
-		getXNodes().put(node.getX(), node);
-		getYNodes().put(node.getY(), node);
+
+	public void setNodeList(List<Node> nodeList) {
+		this.nodeList = nodeList;
+	}
+
+	public void addNode(int x, int y, double weight) {
+		Node node = getNodesMap().containsKey(x) ? getNodesMap().get(x): new Node(x);
+
+		node.addYVals(y);
+		node.incrementWeight(weight);
+
+		getNodesMap().put(node.getId(), node);
+	}
+
+	public void handleNodeList() {
+		setNodeList(getNodesMap().values().stream().collect(Collectors.toList()));
 	}
 
 	public int size() {

@@ -1,17 +1,19 @@
 package com.berkay.yelken.parallel.ga.model;
 
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Node implements Comparable<Node> {
 
-	private int id, x, y;
-	private double weight;
+	private int id, x;
+	private AtomicReference<Double> weight = new AtomicReference<>(0.0);
+	private Set<Integer> yVals = new ConcurrentSkipListSet<>();
 
-	public Node(int id, int x, int y, double weight) {
-		this.id = id;
+	public Node(int x) {
+		this.id = x;
 		this.x = x;
-		this.y = y;
-		this.weight = weight;
 	}
 
 	public int getId() {
@@ -26,24 +28,20 @@ public class Node implements Comparable<Node> {
 		return x;
 	}
 
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	public int getY() {
-		return y;
-	}
-
-	public void setY(int y) {
-		this.y = y;
-	}
-
 	public double getWeight() {
-		return weight;
+		return weight.get();
 	}
 
-	public void setWeight(double weight) {
-		this.weight = weight;
+	public void incrementWeight(double weight) {
+		this.weight.updateAndGet(w -> w + weight);
+	}
+
+	public Set<Integer> getYVals() {
+		return yVals;
+	}
+
+	public void addYVals(int y) {
+		getYVals().add(y);
 	}
 
 	@Override

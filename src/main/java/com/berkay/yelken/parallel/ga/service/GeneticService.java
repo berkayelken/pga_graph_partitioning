@@ -3,6 +3,7 @@ package com.berkay.yelken.parallel.ga.service;
 import static com.berkay.yelken.parallel.ga.util.CrossoverUtil.doGenerationCrossover;
 import static com.berkay.yelken.parallel.ga.util.FitnessHandler.calculateFitness;
 import static com.berkay.yelken.parallel.ga.util.MutationUtil.doGenerationMutation;
+import static com.berkay.yelken.parallel.ga.util.PopulationInitializer.getInitial;
 import static com.berkay.yelken.parallel.ga.util.SelectionUtil.doNaturalSelection;
 import static java.lang.Double.NaN;
 import static java.lang.Math.floor;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import com.berkay.yelken.parallel.ga.model.InitType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,18 +35,21 @@ public class GeneticService {
 
 	private static final int nanoToMilli = 1000000;
 
-	public GraphPartitioning applyAlgorithm(Graph g, ResponseModel res, int populationSize, int generationSize) {
+	public GraphPartitioning applyAlgorithm(Graph g, ResponseModel res, InitType initType, int populationSize, int generationSize,
+			int partitionSize, List<Chromosome> seedList) {
 		GraphPartitioning gp = new GraphPartitioning();
 		gp.setGraph(g);
 
-		res.setPartitionNum(prop.getPartition());
+		res.setPartitionNum(partitionSize);
 		res.setGenerationCount(generationSize);
 
 		AtomicLong totalSelectionTimeCounter = new AtomicLong();
 		AtomicLong totalCrossoverTimeCounter = new AtomicLong();
 		AtomicLong totalMutationTimeCounter = new AtomicLong();
 
-		Generation initial = new Generation(prop.getPartition(), g.size(), populationSize);
+		double imbalanceThreshold = prop.getImbalanceThreshold();
+
+		Generation initial = getInitial(initType, partitionSize, g.size(), populationSize, prop.getMutation(), seedList);
 
 		FitnessModel fitnessModel = calculateFitness(initial, g, NaN, NaN);
 		double costFitExpValue = fitnessModel.getCostFitExpValue();
@@ -52,10 +57,16 @@ public class GeneticService {
 		for (int i = 0; i < generationSize; i++) {
 			int chromosomeCount = fitnessModel.getChromosomes().size();
 			int selection = Double.valueOf(floor(prop.getSelection() * chromosomeCount)).intValue();
-			int newBornCount = chromosomeCount - selection;
+
 
 			LocalTime start = LocalTime.now();
-			Generation newGeneration = new Generation(doNaturalSelection(fitnessModel.getChromosomes(), selection));
+			List<Chromosome> chromosomes = doNaturalSelection(fitnessModel.getChromosomes(), selection, imbalanceThreshold);
+			if(chromosomes.size() < selection / 2)
+				continue;
+			Generation newGeneration = new Generation(chromosomes);
+
+			int newBornCount = chromosomeCount - chromosomes.size();
+
 			LocalTime end = LocalTime.now();
 			totalSelectionTimeCounter.accumulateAndGet(Duration.between(start, end).toNanos(), (a, b) -> a + b);
 
@@ -65,7 +76,7 @@ public class GeneticService {
 			totalCrossoverTimeCounter.accumulateAndGet(Duration.between(start, end).toNanos(), (a, b) -> a + b);
 
 			start = LocalTime.now();
-			doGenerationMutation(newGeneration, prop.getPartition(), prop.getMutation());
+			doGenerationMutation(newGeneration, partitionSize, prop.getMutation());
 			end = LocalTime.now();
 			totalMutationTimeCounter.accumulateAndGet(Duration.between(start, end).toNanos(), (a, b) -> a + b);
 
@@ -104,15 +115,15 @@ public class GeneticService {
 
 		List<Chromosome> bests = Collections.synchronizedList(new ArrayList<>());
 		generations.parallelStream().filter(g -> g != null && g.getChromosomes() != null).forEach(g -> {
-			Chromosome c = g.getChromosomes().parallelStream().filter(GeneticService::isValidChromosome).sorted()
+			Chromosome c = g.getChromosomes().parallelStream().filter(this::isValidChromosome).sorted()
 					.findFirst().get();
 			bests.add(c);
 		});
 
-		return bests.parallelStream().filter(GeneticService::isValidChromosome).sorted().findFirst().get();
+		return bests.parallelStream().filter(this::isValidChromosome).sorted().findFirst().get();
 	}
 
-	private static boolean isValidChromosome(Chromosome c) {
-		return c != null && !Double.isNaN(c.getFitness());
+	private boolean isValidChromosome(Chromosome c) {
+		return c != null && c.getImbalanceValue() <= prop.getImbalanceThreshold();
 	}
 }

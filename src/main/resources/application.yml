@@ -3,4 +3,5 @@ server:
 genetic:
   selection: 0.2
   mutation: 11
-  partition: 5
+  partition: 2
+  imbalanceThreshold: 1.15

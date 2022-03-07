@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Partition {
 	private int size;
+	private double cost = 0.0;
+	private int nonZeroCount = 0;
 	private transient Set<Node> nodes;
 
 	public int getSize() {
@@ -13,6 +15,22 @@ public class Partition {
 
 	public void setSize(int size) {
 		this.size = size;
+	}
+
+	public double getCost() {
+		return cost;
+	}
+
+	public void setCost(double cost) {
+		this.cost = cost;
+	}
+
+	public int getNonZeroCount() {
+		return nonZeroCount;
+	}
+
+	public void setNonZeroCount(int nonZeroCount) {
+		this.nonZeroCount = nonZeroCount;
 	}
 
 	public Set<Node> getNodes() {
